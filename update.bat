@@ -6,13 +6,9 @@ echo.
 echo Downloading latest version from GitHub...
 
 :: Download ZIP
-powershell -Command "Invoke-WebRequest -Uri 'https://github.com/YourJeisus/PhotoBudka/archive/refs/heads/master.zip' -OutFile '%TEMP%\photobudka.zip'"
+powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/YourJeisus/PhotoBudka/archive/refs/heads/master.zip' -OutFile '%TEMP%\photobudka.zip'"
 
-if %errorlevel% neq 0 (
-    echo [ERROR] Download failed. Check internet connection.
-    pause
-    exit /b 1
-)
+if not exist "%TEMP%\photobudka.zip" goto :download_failed
 
 echo [OK] Downloaded
 
@@ -23,9 +19,24 @@ if exist "%TEMP%\photobudka_update" rmdir /s /q "%TEMP%\photobudka_update"
 echo Extracting...
 powershell -Command "Expand-Archive -Path '%TEMP%\photobudka.zip' -DestinationPath '%TEMP%\photobudka_update' -Force"
 
-:: Copy files (overwrite all except photos folder)
+:: Copy all files and folders preserving structure
 echo Updating files...
-powershell -Command "Get-ChildItem '%TEMP%\photobudka_update\PhotoBudka-master\*' -Exclude 'photos' | Copy-Item -Destination '%~dp0' -Recurse -Force"
+set "SRC=%TEMP%\photobudka_update\PhotoBudka-master"
+set "DST=%~dp0"
+
+:: Copy root files
+copy /y "%SRC%\*.py" "%DST%" >nul 2>&1
+copy /y "%SRC%\*.txt" "%DST%" >nul 2>&1
+copy /y "%SRC%\*.bat" "%DST%" >nul 2>&1
+copy /y "%SRC%\.git*" "%DST%" >nul 2>&1
+
+:: Copy static folder
+if not exist "%DST%static" mkdir "%DST%static"
+copy /y "%SRC%\static\*" "%DST%static\" >nul 2>&1
+
+:: Copy templates folder
+if not exist "%DST%templates" mkdir "%DST%templates"
+copy /y "%SRC%\templates\*" "%DST%templates\" >nul 2>&1
 
 :: Cleanup temp files
 del "%TEMP%\photobudka.zip" 2>nul
@@ -37,3 +48,9 @@ echo   Update complete!
 echo   Run start.bat to launch
 echo ==========================================
 pause
+goto :eof
+
+:download_failed
+echo [ERROR] Download failed. Check internet connection.
+pause
+goto :eof

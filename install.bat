@@ -38,7 +38,7 @@ echo.
 
 :: Install dependencies
 echo Installing Python packages...
-pip install -r requirements.txt
+"C:\Program Files\Python312\python.exe" -m pip install -r requirements.txt
 echo.
 
 :: Create photos directory

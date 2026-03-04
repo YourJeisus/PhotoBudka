@@ -4,7 +4,7 @@ echo   PhotoBudka - Starting
 echo ==========================================
 
 :: Start Flask server in background
-start "PhotoBudka Server" /min python app.py
+start "PhotoBudka Server" /min "C:\Program Files\Python312\python.exe" app.py
 
 :: Wait for server to start
 echo Starting server...
