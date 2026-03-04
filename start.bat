@@ -1,20 +1,18 @@
 @echo off
-chcp 65001 >nul
 echo ==========================================
-echo   PhotoBudka — Запуск
+echo   PhotoBudka - Starting
 echo ==========================================
 
 :: Start Flask server in background
 start "PhotoBudka Server" /min python app.py
 
 :: Wait for server to start
-echo Запуск сервера...
+echo Starting server...
 timeout /t 3 /nobreak >nul
 
 :: Open Chrome in kiosk mode
-echo Открываю браузер...
+echo Opening browser...
 
-:: Try common Chrome paths
 set CHROME_PATH=
 if exist "C:\Program Files\Google\Chrome\Application\chrome.exe" (
     set "CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe"
@@ -24,12 +22,12 @@ if exist "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" (
 )
 
 if defined CHROME_PATH (
-    start "" "%CHROME_PATH%" --kiosk --disable-infobars --no-first-run http://localhost:5000
+    start "" "%CHROME_PATH%" --kiosk --disable-infobars --no-first-run http://localhost:8080
 ) else (
-    echo Chrome не найден, открываю в браузере по умолчанию...
-    start http://localhost:5000
+    echo Chrome not found, opening default browser...
+    start http://localhost:8080
 )
 
 echo.
-echo Приложение запущено на http://localhost:5000
-echo Закройте это окно чтобы остановить сервер
+echo App running at http://localhost:8080
+echo Close this window to stop the server

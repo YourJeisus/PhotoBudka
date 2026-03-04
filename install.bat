@@ -1,30 +1,29 @@
 @echo off
-chcp 65001 >nul
 echo ==========================================
-echo   PhotoBudka — Установка
+echo   PhotoBudka - Install
 echo ==========================================
 echo.
 
 :: Check Python
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ОШИБКА] Python не найден!
-    echo Скачайте Python с https://www.python.org/downloads/
-    echo При установке отметьте "Add Python to PATH"
+    echo [ERROR] Python not found!
+    echo Download from https://www.python.org/downloads/
+    echo Check "Add Python to PATH" during install
     pause
     exit /b 1
 )
 
-echo [OK] Python найден
+echo [OK] Python found
 python --version
 
 :: Install dependencies
 echo.
-echo Устанавливаю зависимости...
+echo Installing dependencies...
 pip install -r requirements.txt
 
 if %errorlevel% neq 0 (
-    echo [ОШИБКА] Не удалось установить зависимости
+    echo [ERROR] Failed to install dependencies
     pause
     exit /b 1
 )
@@ -34,7 +33,7 @@ if not exist "photos" mkdir photos
 
 echo.
 echo ==========================================
-echo   Установка завершена!
-echo   Запустите start.bat для старта
+echo   Install complete!
+echo   Run start.bat to launch
 echo ==========================================
 pause

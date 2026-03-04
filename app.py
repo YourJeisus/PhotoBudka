@@ -75,12 +75,14 @@ def status():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+
     print("=" * 50)
     print("  PhotoBudka — Photo Booth")
     print("=" * 50)
     print(f"  Camera: {'OK' if camera.is_available else 'NOT FOUND'}")
     print(f"  Printer: {printer.get_status()}")
-    print(f"  Open http://localhost:5000")
+    print(f"  Open http://localhost:{port}")
     print("=" * 50)
 
-    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
