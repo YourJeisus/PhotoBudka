@@ -26,8 +26,14 @@ def prepare_for_print(image_path_or_bytes, paper_width=None):
     else:
         img = Image.open(image_path_or_bytes)
 
-    # Resize to paper width, maintain aspect ratio
+    # If image is landscape (wider than tall), rotate 90° so the
+    # long side goes along the paper length for maximum size
     w, h = img.size
+    if w > h:
+        img = img.rotate(90, expand=True)
+        w, h = img.size
+
+    # Resize to paper width, maintain aspect ratio
     ratio = paper_width / w
     new_h = int(h * ratio)
     img = img.resize((paper_width, new_h), Image.LANCZOS)
