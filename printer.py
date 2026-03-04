@@ -120,42 +120,63 @@ class Printer:
             return self._print_simulated(image_path)
 
     def _print_gdi(self, img):
-        """Print using Windows GDI."""
+        """Print image via RAW ESC/POS commands through win32print."""
         try:
             import win32print
-            import win32ui
-            from PIL import ImageWin
 
-            hdc = win32ui.CreateDC()
-            hdc.CreatePrinterDC(self.printer_name)
+            # Convert to 1-bit dithered for thermal
+            bw = dither_for_thermal(img)
+            w, h = bw.size
 
-            hdc.StartDoc("PhotoBudka")
-            hdc.StartPage()
+            # Build ESC/POS raster bit image command
+            # We send the image line by line
+            bytes_per_line = (w + 7) // 8
+            raw_data = bytearray()
 
-            # Get printer page size
-            page_w = hdc.GetDeviceCaps(110)  # PHYSICALWIDTH
-            page_h = hdc.GetDeviceCaps(111)  # PHYSICALHEIGHT
+            # ESC @ - Initialize printer
+            raw_data += b'\x1b\x40'
 
-            # Scale image to fit page width
-            w, h = img.size
-            ratio = min(page_w / w, page_h / h)
-            new_w = int(w * ratio)
-            new_h = int(h * ratio)
+            # Center alignment
+            raw_data += b'\x1b\x61\x01'
 
-            # Center horizontally
-            x = (page_w - new_w) // 2
-            y = 0
+            # Print image using GS v 0 (raster bit image)
+            # GS v 0 m xL xH yL yH
+            xl = bytes_per_line & 0xFF
+            xh = (bytes_per_line >> 8) & 0xFF
+            yl = h & 0xFF
+            yh = (h >> 8) & 0xFF
+            raw_data += b'\x1d\x76\x30\x00'
+            raw_data += bytes([xl, xh, yl, yh])
 
-            dib = ImageWin.Dib(img)
-            dib.draw(hdc.GetHandleOutput(), (x, y, x + new_w, y + new_h))
+            # Image data: 1 = black in ESC/POS (PIL 1-bit: 0=black, 255=white)
+            pixels = bw.load()
+            for y_pos in range(h):
+                line = bytearray(bytes_per_line)
+                for x_pos in range(w):
+                    if pixels[x_pos, y_pos] == 0:  # black pixel
+                        byte_idx = x_pos // 8
+                        bit_idx = 7 - (x_pos % 8)
+                        line[byte_idx] |= (1 << bit_idx)
+                raw_data += bytes(line)
 
-            hdc.EndPage()
-            hdc.EndDoc()
-            hdc.DeleteDC()
+            # Feed and cut
+            raw_data += b'\n\n\n'
+            raw_data += b'\x1d\x56\x00'  # GS V 0 - full cut
 
-            return True, "Printed successfully via GDI"
+            # Send RAW data to printer
+            hprinter = win32print.OpenPrinter(self.printer_name)
+            try:
+                win32print.StartDocPrinter(hprinter, 1, ("PhotoBudka", None, "RAW"))
+                win32print.StartPagePrinter(hprinter)
+                win32print.WritePrinter(hprinter, bytes(raw_data))
+                win32print.EndPagePrinter(hprinter)
+                win32print.EndDocPrinter(hprinter)
+            finally:
+                win32print.ClosePrinter(hprinter)
+
+            return True, "Printed successfully"
         except Exception as e:
-            return False, f"GDI print error: {e}"
+            return False, f"Print error: {e}"
 
     def _print_escpos(self, img):
         """Print using ESC/POS commands."""
