@@ -7,24 +7,25 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <!-- WELCOME SCREEN -->
+    <!-- LIVE CAMERA BACKGROUND (always visible) -->
+    <div id="camera-bg">
+        <img id="camera-feed" src="/video_feed" alt="Camera">
+    </div>
+
+    <!-- WELCOME SCREEN (overlay on top of camera) -->
     <div id="screen-welcome" class="screen active">
-        <div class="welcome-content">
-            <h1 class="title">ФОТОБУДКА</h1>
-            <p class="subtitle">Нажми чтобы сфотографироваться!</p>
+        <div class="welcome-overlay">
+            <h1 class="title">FOTOBUDKA</h1>
             <button class="btn btn-primary btn-huge" onclick="startCapture()">
                 <span class="btn-icon">📸</span>
-                <span>СДЕЛАТЬ ФОТО</span>
+                <span>FOTO</span>
             </button>
         </div>
     </div>
 
-    <!-- PREVIEW + COUNTDOWN SCREEN -->
-    <div id="screen-preview" class="screen">
-        <div class="preview-container">
-            <img id="camera-feed" src="/video_feed" alt="Camera">
-            <div id="countdown" class="countdown hidden"></div>
-        </div>
+    <!-- COUNTDOWN SCREEN (camera visible behind) -->
+    <div id="screen-countdown" class="screen">
+        <div id="countdown" class="countdown"></div>
     </div>
 
     <!-- FLASH OVERLAY -->
@@ -33,18 +34,17 @@
     <!-- RESULT SCREEN -->
     <div id="screen-result" class="screen">
         <div class="result-content">
-            <h2>Отличное фото!</h2>
             <div class="photo-frame">
                 <img id="captured-photo" src="" alt="Your photo">
             </div>
             <div class="result-buttons">
                 <button class="btn btn-primary btn-large" onclick="printPhoto()">
                     <span class="btn-icon">🖨️</span>
-                    <span>ПЕЧАТЬ</span>
+                    <span>PRINT</span>
                 </button>
                 <button class="btn btn-secondary btn-large" onclick="retake()">
                     <span class="btn-icon">↩️</span>
-                    <span>ПЕРЕСНЯТЬ</span>
+                    <span>RETAKE</span>
                 </button>
             </div>
         </div>
@@ -54,19 +54,17 @@
     <div id="screen-printing" class="screen">
         <div class="printing-content">
             <div class="spinner"></div>
-            <h2>Печатаем...</h2>
-            <p>Подождите, идёт печать</p>
+            <h2>Printing...</h2>
         </div>
     </div>
 
     <!-- DONE SCREEN -->
     <div id="screen-done" class="screen">
         <div class="done-content">
-            <h2>Готово!</h2>
-            <p>Забери свой чек!</p>
+            <h2>Done!</h2>
             <button class="btn btn-primary btn-huge" onclick="reset()">
                 <span class="btn-icon">📸</span>
-                <span>ЕЩЁ РАЗ</span>
+                <span>ONE MORE</span>
             </button>
         </div>
     </div>
@@ -74,10 +72,10 @@
     <!-- ERROR SCREEN -->
     <div id="screen-error" class="screen">
         <div class="error-content">
-            <h2>Ошибка</h2>
+            <h2>Error</h2>
             <p id="error-message"></p>
             <button class="btn btn-secondary btn-large" onclick="reset()">
-                <span>НАЗАД</span>
+                <span>BACK</span>
             </button>
         </div>
     </div>

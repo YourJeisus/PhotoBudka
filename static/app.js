@@ -19,16 +19,15 @@ function reset() {
 /* ── Capture Flow ──────────────────────────────── */
 
 function startCapture() {
-    showScreen('preview');
-    // Small delay to let the camera stream load
-    setTimeout(() => startCountdown(), 500);
+    // Show countdown over live camera feed
+    showScreen('countdown');
+    startCountdown();
 }
 
 function startCountdown() {
     const el = document.getElementById('countdown');
     let count = COUNTDOWN_SECONDS;
 
-    el.classList.remove('hidden');
     el.textContent = count;
 
     const interval = setInterval(() => {
@@ -41,7 +40,6 @@ function startCountdown() {
             el.style.animation = '';
         } else {
             clearInterval(interval);
-            el.classList.add('hidden');
             doCapture();
         }
     }, 1000);
@@ -61,11 +59,11 @@ function doCapture() {
                 document.getElementById('captured-photo').src = data.image;
                 showScreen('result');
             } else {
-                showError(data.error || 'Ошибка при съёмке');
+                showError(data.error || 'Camera capture failed');
             }
         })
         .catch(err => {
-            showError('Ошибка соединения с камерой');
+            showError('Connection error');
             console.error(err);
         });
 }
@@ -87,11 +85,11 @@ function printPhoto() {
                     }
                 }, 10000);
             } else {
-                showError(data.message || 'Ошибка печати');
+                showError(data.message || 'Print error');
             }
         })
         .catch(err => {
-            showError('Ошибка соединения с принтером');
+            showError('Printer connection error');
             console.error(err);
         });
 }
@@ -107,7 +105,6 @@ let idleTimer = null;
 function resetIdleTimer() {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
-        // Only auto-reset if not on welcome screen
         if (!document.getElementById('screen-welcome').classList.contains('active')) {
             reset();
         }

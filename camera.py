@@ -68,18 +68,33 @@ class Camera:
     def is_available(self):
         return self.cap is not None and self.cap.isOpened()
 
+    def _reconnect(self):
+        """Reconnect to camera if stream dropped."""
+        if self.source is not None:
+            print(f"Reconnecting to camera: {self.source}")
+            if self.cap:
+                self.cap.release()
+            self.cap = cv2.VideoCapture(self.source)
+            if self.cap.isOpened():
+                self._configure()
+                print("Camera reconnected")
+
     def read_frame(self):
         """Read a single frame, return as numpy array or None."""
         if not self.is_available:
-            return None
+            self._reconnect()
+            if not self.is_available:
+                return None
         with self.lock:
             ret, frame = self.cap.read()
-            if ret:
-                # Mirror horizontally for natural selfie view
-                frame = cv2.flip(frame, 1)
-                self.last_frame = frame
-                return frame
-        return None
+            if not ret:
+                # Stream may have dropped — try reconnect
+                self._reconnect()
+                return self.last_frame  # return cached frame while reconnecting
+            # Mirror horizontally for natural selfie view
+            frame = cv2.flip(frame, 1)
+            self.last_frame = frame
+            return frame
 
     def get_jpeg(self, quality=80):
         """Capture a frame and return JPEG bytes."""
