@@ -19,8 +19,9 @@ powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.Security
 if not exist "%TEMP%\python_installer.exe" goto :download_failed
 
 echo [OK] Python downloaded
-echo Installing Python (this takes 1-2 minutes)...
-"%TEMP%\python_installer.exe" /quiet InstallAllUsers=1 PrependPath=1 Include_pip=1
+echo Installing Python - a setup window will open...
+echo Close the setup window when installation is done.
+"%TEMP%\python_installer.exe" InstallAllUsers=1 PrependPath=1 Include_pip=1
 
 del "%TEMP%\python_installer.exe" 2>nul
 
