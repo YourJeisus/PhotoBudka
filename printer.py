@@ -10,7 +10,7 @@ PAPER_WIDTHS = {
     "58mm": 384,
     "80mm": 576,
 }
-DEFAULT_PAPER = "80mm"
+DEFAULT_PAPER = "58mm"
 
 
 def prepare_for_print(image_path_or_bytes, paper_width=None):
@@ -26,9 +26,10 @@ def prepare_for_print(image_path_or_bytes, paper_width=None):
     else:
         img = Image.open(image_path_or_bytes)
 
-    # If image is landscape (wider than tall), rotate 90° so the
-    # long side goes along the paper length for maximum size
     w, h = img.size
+
+    # For thermal printers: rotate landscape photos so the long side
+    # goes along paper length, maximizing print size
     if w > h:
         img = img.rotate(90, expand=True)
         w, h = img.size
@@ -37,6 +38,11 @@ def prepare_for_print(image_path_or_bytes, paper_width=None):
     ratio = paper_width / w
     new_h = int(h * ratio)
     img = img.resize((paper_width, new_h), Image.LANCZOS)
+
+    # Limit max height to prevent printer buffer overflow
+    max_height = paper_width * 3  # max 3:1 aspect ratio
+    if new_h > max_height:
+        img = img.crop((0, 0, paper_width, max_height))
 
     return img
 
