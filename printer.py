@@ -26,23 +26,11 @@ def prepare_for_print(image_path_or_bytes, paper_width=None):
     else:
         img = Image.open(image_path_or_bytes)
 
-    w, h = img.size
-
-    # For thermal printers: rotate landscape photos so the long side
-    # goes along paper length, maximizing print size
-    if w > h:
-        img = img.rotate(90, expand=True)
-        w, h = img.size
-
     # Resize to paper width, maintain aspect ratio
+    w, h = img.size
     ratio = paper_width / w
     new_h = int(h * ratio)
     img = img.resize((paper_width, new_h), Image.LANCZOS)
-
-    # Limit max height to prevent printer buffer overflow
-    max_height = paper_width * 3  # max 3:1 aspect ratio
-    if new_h > max_height:
-        img = img.crop((0, 0, paper_width, max_height))
 
     return img
 
