@@ -6,29 +6,52 @@ import time
 import os
 
 class Camera:
-    def __init__(self, camera_index=None):
+    def __init__(self, source=None):
         self.lock = threading.Lock()
         self.cap = None
-        self.camera_index = camera_index
+        self.source = source
         self.last_frame = None
         self._init_camera()
 
     def _init_camera(self):
-        """Initialize camera, auto-detect index if not specified."""
-        if self.camera_index is not None:
-            self.cap = cv2.VideoCapture(self.camera_index)
+        """Initialize camera. Supports IP camera URL or USB index."""
+        # Try explicit source first (URL or index)
+        if self.source is not None:
+            self.cap = cv2.VideoCapture(self.source)
             if self.cap.isOpened():
                 self._configure()
+                print(f"Camera connected: {self.source}")
                 return
 
-        # Auto-detect: try indices 0-4
+        # Try IP camera from environment variable
+        ip_url = os.environ.get("CAMERA_URL")
+        if ip_url:
+            self.cap = cv2.VideoCapture(ip_url)
+            if self.cap.isOpened():
+                self.source = ip_url
+                self._configure()
+                print(f"IP camera connected: {ip_url}")
+                return
+
+        # Try default IP camera (kiosk)
+        default_ip = "rtsp://admin:123456@192.168.1.30:554/stream1"
+        cap = cv2.VideoCapture(default_ip)
+        if cap.isOpened():
+            self.cap = cap
+            self.source = default_ip
+            self._configure()
+            print(f"IP camera connected: {default_ip}")
+            return
+        cap.release()
+
+        # Fallback: auto-detect USB camera (indices 0-4)
         for idx in range(5):
             cap = cv2.VideoCapture(idx)
             if cap.isOpened():
                 self.cap = cap
-                self.camera_index = idx
+                self.source = idx
                 self._configure()
-                print(f"Camera found at index {idx}")
+                print(f"USB camera found at index {idx}")
                 return
             cap.release()
 
