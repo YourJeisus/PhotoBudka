@@ -16,13 +16,16 @@ if %errorlevel% neq 0 (
 
 echo [OK] Downloaded
 
-:: Extract, overwrite existing files
+:: Clean previous extract
+if exist "%TEMP%\photobudka_update" rmdir /s /q "%TEMP%\photobudka_update"
+
+:: Extract
 echo Extracting...
 powershell -Command "Expand-Archive -Path '%TEMP%\photobudka.zip' -DestinationPath '%TEMP%\photobudka_update' -Force"
 
-:: Copy files from extracted archive to current directory
+:: Copy files (overwrite all except photos folder)
 echo Updating files...
-xcopy "%TEMP%\photobudka_update\PhotoBudka-master\*" "%~dp0" /s /y /exclude:%~dp0photos\
+powershell -Command "Get-ChildItem '%TEMP%\photobudka_update\PhotoBudka-master\*' -Exclude 'photos' | Copy-Item -Destination '%~dp0' -Recurse -Force"
 
 :: Cleanup temp files
 del "%TEMP%\photobudka.zip" 2>nul
