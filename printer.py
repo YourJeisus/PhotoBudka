@@ -10,7 +10,7 @@ PAPER_WIDTHS = {
     "58mm": 384,
     "80mm": 576,
 }
-DEFAULT_PAPER = "58mm"
+DEFAULT_PAPER = "80mm"
 
 
 def prepare_for_print(image_path_or_bytes, paper_width=None):
